@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User List</h1>
+        <div id="user-list"></div>
+        <h2>Add User</h2>
+        <form id="user-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add User</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function fetchUsers() {
+                $.ajax({
+                    url: '/api/users/',
+                    method: 'GET',
+                    success: function(data) {
+                        let userList = '<ul>';
+                        data.forEach(user => {
+                            userList += `<li>${user.user_name} (${user.user_email}) <button onclick="deleteUser(${user.id})">Delete</button></li>`;
+                        });
+                        userList += '</ul>';
+                        $('#user-list').html(userList);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+            $('#user-form').on('submit', function(event) {
+                event.preventDefault();
+                const user_name = $('#username').val();
+                const user_email = $('#email').val();
+
+                $.ajax({
+                    url: '/api/users/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user_name, user_email }),
+                    success: function(data) {
+                        $('#message').html('<div class="alert alert-success">User added successfully</div>');
+                        fetchUsers();
+                    },
+                    error: function(error) {
+                        $('#message').html('<div class="alert alert-danger">Error adding user</div>');
+                        console.log(error);
+                    }
+                });
+            });
+
+            // window.deleteUser = function(id) {
+            //     $.ajax({
+            //         url: `/api/users/${id}/`,
+            //         method: 'DELETE',
+            //         success: function(data) {
+            //             $('#message').html('<div class="alert alert-success">User deleted successfully</div>');
+            //             fetchUsers();
+            //         },
+            //         error: function(error) {
+            //             $('#message').html('<div class="alert alert-danger">Error deleting user</div>');
+            //             console.log(error);
+            //         }
+            //     });
+            // };
+
+            fetchUsers();
+        });
+    </script>
+</body>
+</html>
